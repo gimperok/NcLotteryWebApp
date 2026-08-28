@@ -1,6 +1,6 @@
 ﻿using NcLotteryWebApp.Models;
 
-namespace NcLotteryWebApp.Factories
+namespace NcLotteryWebApp.Services.Factories
 {
     public class LotteryFactory
     {
