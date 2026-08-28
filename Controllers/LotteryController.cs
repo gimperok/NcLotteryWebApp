@@ -4,6 +4,9 @@ using NcLotteryWebApp.Services.Factories;
 
 namespace NcLotteryWebApp.Controllers
 {
+    /// <summary>
+    /// Lottery controller
+    /// </summary>
     [ApiController]
     [Route("api/[controller]/[action]")]
     public class LotteryController : ControllerBase

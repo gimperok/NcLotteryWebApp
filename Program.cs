@@ -1,5 +1,6 @@
 using NcLotteryWebApp.Components;
 using NcLotteryWebApp.Services.Factories;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,9 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1",
         Description = "Public API for generating random numbers for North Carolina lotteries (Powerball, Mega Millions)."
     });
+
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename), includeControllerXmlComments: true);
 });
 
 // Register fabric in DI
@@ -30,7 +34,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "NC Lottery API v1");
-    c.RoutePrefix = "swagger";    // for adress '/swagger'
+    c.RoutePrefix = "swagger";    // for address '/swagger'
 });
 
 // Configure the HTTP request pipeline.
