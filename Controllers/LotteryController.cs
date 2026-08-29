@@ -31,7 +31,7 @@ namespace NcLotteryWebApp.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(LotteryResult), 200)]
         [ProducesResponseType(400)]
-        public ActionResult GetGeneratedTicket(string lotteryType)
+        public ActionResult GetGeneratedTicket(LotteryType lotteryType)
         {
             var lottery = _factory.CreateLottery(lotteryType);
             if (lottery == null)
@@ -57,9 +57,8 @@ namespace NcLotteryWebApp.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(LotteryResult), 200)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> GetLatestDrawResults(string lotteryType)
+        public async Task<IActionResult> GetLatestDrawResults(LotteryType lotteryType)
         {
-            //var result = await _parserService.ParseArchiveDataAsync(lotteryType);
             var lottery = _factory.CreateLottery(lotteryType);
             if (lottery == null)
                 return BadRequest(new

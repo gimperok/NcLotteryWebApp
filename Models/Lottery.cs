@@ -4,11 +4,20 @@
     {
         public abstract string Name { get; }
         public abstract string BonusBallName { get; }
+        public abstract LotteryType Type { get; }
+
         protected abstract int MainNumbersCount { get; }
         protected abstract int MaxMainNumber { get; }
         protected abstract int MaxBonusNumber { get; }
 
         private readonly Random _random = new Random();
+
+
+        public abstract string UrlSuffix { get; }
+        public abstract string WhiteBallsIdPattern { get; }
+        public abstract string BonusBallId { get; }
+        public abstract string JackpotXPath { get; }
+
 
         public LotteryResult GenerateTicket()
         {
@@ -21,8 +30,7 @@
 
             int bonusNumber = _random.Next(1, MaxBonusNumber + 1);
 
-            return new LotteryResult(Name, mainNumbers.OrderBy(n => n).ToList(), bonusNumber, BonusBallName);
+            return new LotteryResult(Type, Name, mainNumbers.OrderBy(n => n).ToList(), bonusNumber, BonusBallName);
         }
-
     }
 }

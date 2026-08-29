@@ -4,13 +4,13 @@ namespace NcLotteryWebApp.Services.Factories
 {
     public class LotteryFactory
     {
-        public Lottery? CreateLottery(string lotteryType)
+        public Lottery? CreateLottery(LotteryType lotteryType)
         {
-            return lotteryType.ToLower() switch
+            return lotteryType switch
             {
-                "1" or "powerball" => new PowerballLottery(),
-                "2" or "megamillions" => new MegaMillionsLottery(),
-                _ => null
+                LotteryType.Powerball => new PowerballLottery(),
+                LotteryType.MegaMillions => new MegaMillionsLottery(),
+                _ => throw new ArgumentException($"Unsupported lottery type: {lotteryType}", nameof(lotteryType))
             };
         }
     }
