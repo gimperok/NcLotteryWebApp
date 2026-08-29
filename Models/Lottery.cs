@@ -3,10 +3,10 @@
     public abstract class Lottery
     {
         public abstract string Name { get; }
+        public abstract string BonusBallName { get; }
         protected abstract int MainNumbersCount { get; }
         protected abstract int MaxMainNumber { get; }
         protected abstract int MaxBonusNumber { get; }
-        protected abstract string BonusBallName { get; }
 
         private readonly Random _random = new Random();
 

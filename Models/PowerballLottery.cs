@@ -6,6 +6,6 @@
         protected override int MainNumbersCount => 5;
         protected override int MaxMainNumber => 69;
         protected override int MaxBonusNumber => 26;
-        protected override string BonusBallName => "Powerball";
+        public override string BonusBallName => "Powerball";
     }
 }

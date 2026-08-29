@@ -4,9 +4,9 @@ namespace NcLotteryWebApp.Services.Factories
 {
     public class LotteryFactory
     {
-        public Lottery? CreateLottery(string choice)
+        public Lottery? CreateLottery(string lotteryType)
         {
-            return choice.ToLower() switch
+            return lotteryType.ToLower() switch
             {
                 "1" or "powerball" => new PowerballLottery(),
                 "2" or "megamillions" => new MegaMillionsLottery(),

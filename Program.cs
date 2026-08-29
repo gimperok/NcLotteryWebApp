@@ -1,4 +1,5 @@
 using NcLotteryWebApp.Components;
+using NcLotteryWebApp.Services;
 using NcLotteryWebApp.Services.Factories;
 using System.Reflection;
 
@@ -25,8 +26,11 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename), includeControllerXmlComments: true);
 });
 
+builder.Services.AddHttpClient();
+
 // Register fabric in DI
 builder.Services.AddScoped<LotteryFactory>();
+builder.Services.AddScoped<LotteryParserService>();
 
 var app = builder.Build();
 
