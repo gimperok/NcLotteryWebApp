@@ -31,11 +31,10 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename), includeControllerXmlComments: true);
 });
 
-builder.Services.AddHttpClient();
 
 // Register fabric in DI
-builder.Services.AddScoped<LotteryFactory>();
-builder.Services.AddScoped<LotteryParserService>();
+builder.Services.AddSingleton<LotteryFactory>();
+builder.Services.AddHttpClient<LotteryParserService>();
 
 var app = builder.Build();
 
