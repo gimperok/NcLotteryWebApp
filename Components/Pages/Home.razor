@@ -1,84 +1,145 @@
-﻿@* @page "/"
-
-<PageTitle>Home</PageTitle>
-
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
-
-https://nclottery.com/powerball
-https://nclottery.com/mega-millions
- *@
-
-@page "/"
+﻿@page "/"
 @using NcLotteryWebApp.Models
+@using NcLotteryWebApp.Services
 @using NcLotteryWebApp.Services.Factories
 
-
 @inject LotteryFactory LotteryFactory
+@inject LotteryParserService ParserService
 
 <div class="container text-center mt-5">
-    <div class="card shadow-lg p-4 mx-auto" style="max-width: 500px; border-radius: 20px;">
-        <h2 class="mb-4">🎰 NC Lottery Generator</h2>
-        <p class="text-muted">Lottery Ticket Generator (North Carolina)</p>
+    <div class="card shadow-lg p-4 mx-auto border-0" style="max-width: 500px; border-radius: 24px; background: #f8f9fa;">
+
+        <h2 class="mb-1 fw-bold text-dark">🎰 NC Lottery Hub</h2>
+        <p class="text-muted small mb-4">North Carolina • Quick Assistant</p>
+
 
         <!-- Buttons -->
-        <div class="d-grid gap-3 my-4">
-            <button class="btn btn-primary btn-lg p-3" @onclick='() => Generate("powerball")'>
-                🔮 PowerBall
+        <div class="d-flex flex-column gap-2 my-4">
+
+            <span class="text-start text-muted fw-bold ps-1" style="font-size: 0.75rem; letter-spacing: 1px;">TICKET GENERATION</span>
+            <button class="btn btn-primary btn-lg py-3 fw-bold shadow-sm custom-btn" @onclick='() => Generate(LotteryType.Powerball)'>
+                🔮 Generate Powerball
             </button>
-            <button class="btn btn-success btn-lg p-3" @onclick='() => Generate("megamillions")'>
-                💰 Mega Millions
+            <button class="btn btn-success btn-lg py-3 fw-bold shadow-sm custom-btn" @onclick='() => Generate(LotteryType.MegaMillions)'>
+                💰 Generate Mega Millions
             </button>
+
+            <span class="text-start text-muted fw-bold ps-1 mt-3" style="font-size: 0.75rem; letter-spacing: 1px;">LATEST DRAWING</span>
+            <button class="btn btn-outline-primary btn-md py-2 fw-bold custom-btn" @onclick='() => LoadArchive(LotteryType.Powerball)'>
+                📊 Powerball Archive
+            </button>
+            <button class="btn btn-outline-success btn-md py-2 fw-bold custom-btn" @onclick='() => LoadArchive(LotteryType.MegaMillions)'>
+                📊 Mega Millions Archive
+            </button>
+
         </div>
 
-        <!-- Outputting the result -->
-        @if (result != null)
-        {
-            <div class="mt-4 animate__animated animate__fadeIn">
-                <h4 class="text-secondary mb-3">Ticket for @result.LotteryName:</h4>
-                <div class="d-flex justify-content-center align-items-center flex-wrap gap-2">
 
-                    @foreach (var num in result.MainNumbers)
+        <!-- Reusable balls unit -->
+        @if (activeResult != null)
+        {
+            var brandColor = GetBrandColor(activeResult.Type);
+            var bonusBg = GetBonusBgColor(activeResult.Type);
+            var bonusText = GetBonusTextColor(activeResult.Type);
+
+            <div class="mt-4 p-3 bg-white rounded-4 shadow-sm border border-light animate-fade-in">
+
+                <!-- Dynamic title based on the selected lottery -->
+                <h5 class="fw-bold mb-3" style="color: @brandColor">
+                    @activeResult.LotteryName
+                    <span class="badge @(activeResult.IsArchiveData ? "bg-secondary" : "bg-dark") ms-2 fs-6">
+                        @(activeResult.IsArchiveData ? "Winning Numbers" : "Your ticket")
+                    </span>
+                </h5>
+
+                <!-- Balls row -->
+                <div class="d-flex justify-content-center align-items-center flex-wrap gap-2 my-3">
+                    @foreach (var num in activeResult.MainNumbers)
                     {
-                        <div class="rounded-circle bg-light border border-success d-flex align-items-center justify-content-center text-success fw-bold fs-4 shadow-sm"
-                             style="width: 55px; height: 55px;">
+                        <div class="rounded-circle bg-white d-flex align-items-center justify-content-center fw-bold fs-4 shadow-sm text-dark loop-ball"
+                             style="width: 52px; height: 52px; border: 2px solid @brandColor;">
                             @num.ToString("D2")
                         </div>
                     }
 
                     <div class="fw-bold fs-3 mx-1 text-muted">|</div>
 
-                    <!-- Bonus ball -->
-                    <div class="rounded-circle bg-danger text-white d-flex flex-column align-items-center justify-content-center fw-bold shadow"
-                         style="width: 60px; height: 60px; font-size: 0.75rem;" title="@result.BonusName">
-                        <span class="fs-5">@result.BonusNumber.ToString("D2")</span>
-                        <span style="font-size: 10px; scale: 0.8;">BALL</span>
+                    <!-- Bonus ball-->
+                    <div class="rounded-circle d-flex flex-column align-items-center justify-content-center fw-bold shadow bonus-ball"
+                         style="width: 56px; height: 56px; background-color: @bonusBg; color: @bonusText !important;">
+                        <span class="fs-5">@activeResult.BonusNumber.ToString("D2")</span>
+                        <span style="font-size: 6px; font-weight: normal; letter-spacing: 0.5px;">@activeResult.BonusName.ToUpper()</span>
                     </div>
                 </div>
+
+                <!-- Jackpot block -->
+                @if (activeResult.IsArchiveData && !string.IsNullOrEmpty(activeResult.Jackpot))
+                {
+                    <div class="mt-3 pt-2 border-top text-center animate-slide-up">
+                        <div class="text-muted small">Current Estimated Jackpot:</div>
+                        <div class="fs-4 fw-black text-danger fw-bold">@activeResult.Jackpot</div>
+                    </div>
+                }
             </div>
         }
 
         <hr class="my-4" />
 
-        <!-- Button to navigate to Swagger -->
+        <!-- Swagger button -->
         <div>
-            <a href="/swagger" target="_blank" class="btn btn-outline-info btn-sm w-100 py-2">
-                📄 Open Swagger API documentation
+            <a href="/swagger" target="_blank" class="btn btn-outline-info btn-sm w-100 py-2 fw-semibold shadow-sm">
+                📄 Open Interactive Swagger API Documentation
             </a>
         </div>
     </div>
 </div>
 
-@code {
-    private LotteryResult? result;
 
-    private void Generate(string type)
+
+@code {
+    private LotteryResult? activeResult;
+
+    private void Generate(LotteryType type)
+    {
+        var lottery = LotteryFactory.CreateLottery(type); // DI factory call directly
+        if (lottery != null)
+            activeResult = lottery.GenerateTicket(); //Jackpot = null, IsArchiveData = false
+    }
+
+    private async Task LoadArchive(LotteryType type)
     {
         var lottery = LotteryFactory.CreateLottery(type);
         if (lottery != null)
         {
-            result = lottery.GenerateTicket(); // Direct call in server memory;
+            var archiveData = await ParserService.ParseArchiveDataAsync(lottery);
+            if (archiveData != null)
+            {
+                activeResult = archiveData;
+            }
         }
     }
+
+
+    // return main brand color
+    private string GetBrandColor(LotteryType type) => type switch
+    {
+        LotteryType.Powerball => "#0d6efd", //blue
+        LotteryType.MegaMillions => "#198754", //green
+        _ => "#6c757d" // Серый дефолтный цвет на случай добавления новых лотерей
+    };
+
+    // return backgroung color for bonus ball
+    private string GetBonusBgColor(LotteryType type) => type switch
+    {
+        LotteryType.Powerball => "#dc3545", //red
+        LotteryType.MegaMillions => "#ffc107", //yellow
+        _ => "#6c757d"
+    };
+
+    // return color text for bonus ball
+    private string GetBonusTextColor(LotteryType type) => type switch
+    {
+        LotteryType.MegaMillions => "#000000", //black
+        _ => "#ffffff" //white for other
+    };
 }
