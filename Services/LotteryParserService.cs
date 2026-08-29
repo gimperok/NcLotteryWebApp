@@ -6,6 +6,7 @@ namespace NcLotteryWebApp.Services
     public class LotteryParserService
     {
         private readonly HttpClient _httpClient;
+        private const string BaseUrl = "https://nclottery.com";
         public LotteryParserService(HttpClient httpClient)
         {
             _httpClient = httpClient;
@@ -13,21 +14,22 @@ namespace NcLotteryWebApp.Services
         }
         public async Task<LotteryResult> ParseArchiveDataAsync(Lottery lottery)
         {
-            string url = "https://nclottery.com";
+            string urlSuffix;
             string whiteBallsIdPattern = "ctl00_MainContent_lbl";
             string bonusBallId = "ctl00_MainContent_lbl";
             string jackpotXPath = "ctl00_MainContent_Header";
 
             if (lottery is PowerballLottery)
             {
-                url = $"{url}/powerball";
+                urlSuffix = "powerball";
                 whiteBallsIdPattern = $"{whiteBallsIdPattern}Ball";
                 bonusBallId = $"{bonusBallId}Powerball";
-                jackpotXPath = $"//span[@id='{jackpotXPath}Powerball1_JackpotPowerball_lblPBJackpot']";
+                jackpotXPath = $"//span[@id='{jackpotXPath}Powerball_JackpotPowerball_lblPBJackpot' " +
+                                   $"or @id='{jackpotXPath}Powerball1_JackpotPowerball_lblPBJackpot']";
             }
             else if (lottery is MegaMillionsLottery)
             {
-                url = $"{url}/mega-millions";
+                urlSuffix = "mega-millions";
                 whiteBallsIdPattern = $"{whiteBallsIdPattern}Num";
                 bonusBallId = $"{bonusBallId}Megaball";
                 jackpotXPath = $"//span[@id='{jackpotXPath}MegaMillions_JackpotMegaMillions_lblMMPrize']";
@@ -36,7 +38,7 @@ namespace NcLotteryWebApp.Services
 
             try
             {
-                var html = await _httpClient.GetStringAsync(url);
+                var html = await _httpClient.GetStringAsync($"{BaseUrl}/{urlSuffix}");
                 var doc = new HtmlDocument();
                 doc.LoadHtml(html);
 
@@ -59,8 +61,11 @@ namespace NcLotteryWebApp.Services
 
                 // Fill  in Jackpot
                 var jackpotNode = doc.DocumentNode.SelectSingleNode(jackpotXPath);
-                if (jackpotNode != null)
-                    jackpot = jackpotNode.InnerText.Trim();
+                if (jackpotNode!= null)
+                {
+                    string rawJackpot = jackpotNode.InnerText.Trim();
+                    jackpot = rawJackpot == "-pending-" ? jackpot : rawJackpot;
+                }
 
                 if (winningNumbers.Count == 5)
                     return new LotteryResult(lottery.Name, winningNumbers, bonusNumber, lottery.BonusBallName, jackpot, isArchiveData: true);
